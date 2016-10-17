@@ -1,7 +1,10 @@
 require 'json'
 
 class ItemsController < ApplicationController
+
   respond_to :json
+
+  skip_before_action :verify_authenticity_token
 
   def index
     @items = Item.where(collection_id: params[:collection_id])
@@ -31,4 +34,18 @@ class ItemsController < ApplicationController
       render :text => '', :content_type => 'text/plain'
     end
   end
+
+  def create
+    @item = Item.new(name: params[:name], description: params[:description], picture: params[:picture], collection_id: params[:collection_id])
+    if @item.save
+      respond_to do |format|
+        format.json{render :json => @item, :status => :created}
+      end
+    end
+  end
+
+  def item_params
+    params.require(:item).permit(:name, :description, :picture)
+  end
+
 end
